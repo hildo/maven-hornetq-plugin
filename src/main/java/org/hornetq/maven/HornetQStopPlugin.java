@@ -28,7 +28,7 @@ public class HornetQStopPlugin extends AbstractMojo
     {
         try
         {
-            String dirName = hornetqConfigurationDir != null?hornetqConfigurationDir:".";
+            String dirName = (hornetqConfigurationDir != null ? hornetqConfigurationDir : System.getProperty("hornetq.config.dir", "."));
             final File file = new File(dirName + "/STOP_ME");
             file.createNewFile();
             try
