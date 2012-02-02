@@ -57,6 +57,11 @@ public class HornetQStartPlugin extends AbstractMojo
    private String hornetqConfigurationDir;
 
    /**
+    * @parameter default-value="${basedir}/target/data"
+    */
+   private String hornetqDataDir;
+
+   /**
     * @parameter default-value=true
     */
    private Boolean useJndi;
@@ -93,7 +98,7 @@ public class HornetQStartPlugin extends AbstractMojo
          {
             extendPluginClasspath(hornetqConfigurationDir);
             configuration = new FileConfiguration();
-            File file = new File(hornetqConfigurationDir + "hornetq-configuration.xml");
+            File file = new File(hornetqConfigurationDir + "/hornetq-configuration.xml");
             ((FileConfiguration) configuration).setConfigurationUrl(file.toURI().toURL().toExternalForm());
             ((FileConfiguration) configuration).start();
          }
@@ -101,6 +106,13 @@ public class HornetQStartPlugin extends AbstractMojo
          {
             configuration = new ConfigurationImpl();
             configuration.setJournalType(JournalType.NIO);
+         }
+
+         if (hornetqDataDir != null) {
+             configuration.setJournalDirectory(hornetqDataDir + "/journal");
+             configuration.setBindingsDirectory(hornetqDataDir + "/bindings");
+             configuration.setLargeMessagesDirectory(hornetqDataDir + "/large-messages");
+             configuration.setPagingDirectory(hornetqDataDir + "/paging");
          }
 
          HornetQServer server;
@@ -123,9 +135,9 @@ public class HornetQStartPlugin extends AbstractMojo
          final JMSServerManager manager = new JMSServerManagerImpl(server);
          manager.start();
 
+         String dirName = (hornetqConfigurationDir != null ? hornetqConfigurationDir : System.getProperty("hornetq.config.dir", "."));
          if (waitOnStart)
          {
-            String dirName = System.getProperty("hornetq.config.dir", ".");
             final File file = new File(dirName + "/STOP_ME");
             if (file.exists())
             {
@@ -140,7 +152,6 @@ public class HornetQStartPlugin extends AbstractMojo
          }
          else
          {
-            String dirName = hornetqConfigurationDir != null?hornetqConfigurationDir:".";
             final File file = new File(dirName + "/STOP_ME");
             if (file.exists())
             {
